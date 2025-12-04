@@ -22,8 +22,8 @@ Using **static routes + default routes** to provide:
 
 ## Topology
 
+![Topology Diagram](Static%20default%20routes.drawio%20%282%29.png)
 
-![Topology Diagram](topology.png)
 
 ---
 
