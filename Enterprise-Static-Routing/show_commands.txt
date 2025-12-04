@@ -1,0 +1,35 @@
+show ip interface brief
+show ip route
+show ip route 10.2.10.1
+show ip route 10.2.10.128
+show ip route 10.2.10.194
+
+! WAN and trunk checks
+show interfaces g0/2
+show interfaces g0/3
+show interfaces trunk
+show vlan brief
+
+! Optional traceroute
+traceroute 10.2.10.1
+traceroute 10.2.10.128
+traceroute 10.2.10.194
+
+Test pings:
+
+From Texas-RTR:
+ping 10.2.10.128 (ATL loopback)
+ping 10.2.10.194 (FL-CORE-SW loopback)
+
+From ATL-RTR:
+ping 10.2.10.1 (TX loopback)
+ping 10.2.10.194
+
+From FL-CORE-SW:
+ping 10.2.10.1
+ping 10.2.10.128
+
+From PCs (TX/FL/ATL user VLANs):
+Ping local default gateway
+Ping remote site user VLAN IPs
+Ping all loopbacks
