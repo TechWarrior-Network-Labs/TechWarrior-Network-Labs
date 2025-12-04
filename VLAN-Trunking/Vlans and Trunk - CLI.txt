@@ -1,218 +1,276 @@
-TO DO LIST
+===========================================
+ SWX – ACCESS SWITCH
+===========================================
 
-  1. set up basic switch/router configs
-  2. set access vlans and trunk
-  3. set up svi on 2 out of 3 switches 
-  4. always remeber to save your configurations
- ------------------------------------
- Command syntax:
- 
- !! SWX !!
- 
+! Basic Setup
 conf t
-	enable secret cisco
-	username cisco secret cisco
-	line con 0
-	logg sync
-	login loc
-	line vty 0 4
-	logg sync
-	login loc
-	end
+ enable secret cisco
+ username cisco secret cisco
 
+ line con 0
+  logging synchronous
+  login local
+ exit
 
-!
+ line vty 0 4
+  logging synchronous
+  login local
+ exit
+end
+
+! VLANs
+conf t
 vlan 1100
  name HR
- 
- int g0/2
+exit
+
+! Access Port
+interface g0/2
  switchport mode access
- switchport acess vlan 1100
+ switchport access vlan 1100
  spanning-tree portfast
  spanning-tree bpduguard enable
- 
- Tip# always portfast and bpduguard for vlan access and endhosts
- ------------------------------
-  Trunk
+exit
 
- int g1/0
- switchport trunk encap dot1q
+! Trunk Port
+interface g1/0
+ switchport trunk encapsulation dot1q
  switchport mode trunk
  switchport trunk allowed vlan 1100,2100
- ------------------------------
+exit
 
- int vlan 1100
+! Optional SVI (for management)
+interface vlan 1100
  ip address 10.2.10.214 255.255.255.248
  no shutdown
- -------------------------------------
+exit
+end
 
-!! FL-CORE-SW !!
 
+
+===========================================
+ FL-CORE-SW – LAYER 3 SWITCH
+===========================================
+
+! Basic Setup
 conf t
-	enable secret cisco
-	username cisco secret cisco
-	line con 0
-	logg sync
-	login loc
-	line vty 0 4
-	logg sync
-	login loc
-	end
-	
- conf t
-ip routing(enables routing on L2 switch)
+ enable secret cisco
+ username cisco secret cisco
 
-ip route 0.0.0.0 0.0.0.0 10.2.10.202
- 
- int loop0
+ line con 0
+  logging synchronous
+  login local
+ exit
+
+ line vty 0 4
+  logging synchronous
+  login local
+ exit
+end
+
+! Enable routing on L2 switch
+conf t
+ ip routing
+exit
+
+! Default route toward FL-RTR
+conf t
+ ip route 0.0.0.0 0.0.0.0 10.2.10.202
+exit
+
+! Loopback (Mgmt)
+conf t
+interface loopback0
  ip address 10.2.10.194 255.255.255.255
- desc *** RMT MGMT ***
-!
-!
- 
+ description *** RMT MGMT ***
+exit
+
+! VLAN Definitions
 vlan 1100
  name HR
 vlan 2100
  name IT
 vlan 3100
  name SALES
- 
- int vlan 1100
+exit
+
+! SVIs
+interface vlan 1100
  description *** HR ***
  ip address 10.2.10.209 255.255.255.248
  no shutdown
- int vlan 2100 
+exit
+
+interface vlan 2100
  description *** IT ***
  ip address 10.2.10.217 255.255.255.248
  no shutdown
- int vlan 3100
+exit
+
+interface vlan 3100
  description *** SALES ***
  ip address 10.2.10.225 255.255.255.224
  no shutdown
- 
- int g1/0
- switchport trunk encap dot1q
+exit
+
+! Trunks
+interface g1/0
+ switchport trunk encapsulation dot1q
  switchport mode trunk
  switchport trunk allowed vlan 1100,2100
- 
- int g1/1
- switchport trunk encap dot1q
+exit
+
+interface g1/1
+ switchport trunk encapsulation dot1q
  switchport mode trunk
  switchport trunk allowed vlan 1100,2100
- 
- Int g1/2
+exit
+
+! Access Port (example)
+interface g1/2
  switchport mode access
  switchport access vlan 3100
  spanning-tree portfast
  spanning-tree bpduguard enable
- 
- int g0/3
+exit
+
+! L3 Routed Link to FL-RTR
+interface g0/3
  no switchport
  ip address 10.2.10.201 255.255.255.252
- desc *** /To /FL-RTR ***
- 
- ip route 10.2.10.192 255.255.255.255 10.2.10.201
+ description *** To FL-RTR ***
+exit
 
---------------------------------------------
+! Static host route toward loopback
+ip route 10.2.10.192 255.255.255.255 10.2.10.201
+end
 
-SWY
-!
 
+
+===========================================
+ SWY – ACCESS SWITCH #2
+===========================================
+
+! Basic Setup
 conf t
-	enable secret cisco
-	username cisco secret cisco
-	line con 0
-	logg sync
-	login loc
-	line vty 0 4
-	logg sync
-	login loc
-	end
-	
-vlan /2100
+ enable secret cisco
+ username cisco secret cisco
+
+ line con 0
+  logging synchronous
+  login local
+ exit
+
+ line vty 0 4
+  logging synchronous
+  login local
+ exit
+end
+
+! VLAN
+vlan 2100
  name IT
- 
- int g0/2
+exit
+
+! Access Port
+interface g0/2
  switchport mode access
  switchport access vlan 2100
  spanning-tree portfast
  spanning-tree bpduguard enable
- 
- 
- int vlan 2100
- ip address 10.2.10.221 255.255.255.
- shutdown
+exit
+
+! SVI (optional for mgmt/testing)
+interface vlan 2100
+ ip address 10.2.10.221 255.255.255.248
  no shutdown
- 
- int g1/1
- switchport trunk encap dot1q
+exit
+
+! Trunk
+interface g1/1
+ switchport trunk encapsulation dot1q
  switchport mode trunk
  switchport trunk allowed vlan 1100,2100
- exit
- 
- do wr me
- -------------------------------------------
- 
- Router FL-RTR
+exit
 
+do wr
+end
+
+
+
+===========================================
+ FL-RTR – ROUTER
+===========================================
+
+! Basic Setup
 en
+conf t
+ enable secret cisco
+ username cisco secret cisco
+exit
+
 line con 0
  logging synchronous
  login local
-line aux 0
- logging synchronous
+exit
+
 line vty 0 4
  logging synchronous
  login local
- 
- conf t
-	enable secret cisco
-	username cisco secret cisco
- 
-!
+exit
+
+! Default Route Toward FL-CORE-SW
 conf t
 ip route 0.0.0.0 0.0.0.0 10.2.10.201
-FL-RTR has a default route back to FL-CORE-SW:
+exit
 
-int loop0
-ip address 10.2.10.192/32
+! Loopback (Testing)
+interface loopback0
+ ip address 10.2.10.192 255.255.255.255
+exit
 
-int g0/3 
-ip address 10.2.10.202 255.255.255.252
-no shutdown
+! Routed Link to CORE Switch
+interface g0/3
+ ip address 10.2.10.202 255.255.255.252
+ no shutdown
+exit
+
+end
 
 
-----------------------------------------
-Verification & Show Commands
-!
 
-sh ip int br
-sh vlan br
-sh int status(switches only)
-sh int g0/3 
+===========================================
+ VERIFICATION COMMANDS
+===========================================
 
-default int g0/3 (resets the interface port)
-int g0/0
-duplex full, duplex half, duplex auto
-speed 100,1000, auto
-*** always set speed if manually setting duplex make sure both sides of the interface match ***
-From FL-RTR 
-Ping all IP's 
+show ip interface brief
+show vlan brief
+show interface status
+show interface g0/3
+show ip route
 
-From FL-CORE-SW
-ping 10.2.10.192 source 10.2.10.209   ! from VLAN1100 SVI
-ping 10.2.10.192 source 10.2.10.217   ! from VLAN2100 SVI
-ping 10.2.10.192 source 10.2.10.225   ! from VLAN3100 SVI
+! From FL-RTR
+ping 10.2.10.209
+ping 10.2.10.217
+ping 10.2.10.225
 
-!! BONUS !!!
-✔ If a loopback won’t ping → it’s always routing
-✔ FL-RTR had the loopback → fine
-✔ FL-CORE-SW had zero idea how to get back → fixed with one line
- conf t
+! From FL-CORE-SW (SVI sourced)
+ping 10.2.10.192 source 10.2.10.209
+ping 10.2.10.192 source 10.2.10.217
+ping 10.2.10.192 source 10.2.10.225
+
+===========================================
+ BONUS NOTES
+===========================================
+
+! Loopback not reachable? It's ALWAYS routing.
+! FL-RTR knows about loopback (directly connected).
+! FL-CORE-SW needed default route back:
+
 ip route 0.0.0.0 0.0.0.0 10.2.10.202
 
-default int g0/3 (resets the interface port)
-int g0/0
-duplex full, duplex half, duplex auto
-speed 100,1000, auto
-*** always set speed if manually setting duplex make sure both sides of the interface match ***
+! Duplex/Speed resets
+default interface g0/3
+interface g0/0
+ duplex auto
+ speed auto
