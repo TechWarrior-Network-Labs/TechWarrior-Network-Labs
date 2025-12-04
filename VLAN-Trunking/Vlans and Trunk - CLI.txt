@@ -1,0 +1,218 @@
+TO DO LIST
+
+  1. set up basic switch/router configs
+  2. set access vlans and trunk
+  3. set up svi on 2 out of 3 switches 
+  4. always remeber to save your configurations
+ ------------------------------------
+ Command syntax:
+ 
+ !! SWX !!
+ 
+conf t
+	enable secret cisco
+	username cisco secret cisco
+	line con 0
+	logg sync
+	login loc
+	line vty 0 4
+	logg sync
+	login loc
+	end
+
+
+!
+vlan 1100
+ name HR
+ 
+ int g0/2
+ switchport mode access
+ switchport acess vlan 1100
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ 
+ Tip# always portfast and bpduguard for vlan access and endhosts
+ ------------------------------
+  Trunk
+
+ int g1/0
+ switchport trunk encap dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 1100,2100
+ ------------------------------
+
+ int vlan 1100
+ ip address 10.2.10.214 255.255.255.248
+ no shutdown
+ -------------------------------------
+
+!! FL-CORE-SW !!
+
+conf t
+	enable secret cisco
+	username cisco secret cisco
+	line con 0
+	logg sync
+	login loc
+	line vty 0 4
+	logg sync
+	login loc
+	end
+	
+ conf t
+ip routing(enables routing on L2 switch)
+
+ip route 0.0.0.0 0.0.0.0 10.2.10.202
+ 
+ int loop0
+ ip address 10.2.10.194 255.255.255.255
+ desc *** RMT MGMT ***
+!
+!
+ 
+vlan 1100
+ name HR
+vlan 2100
+ name IT
+vlan 3100
+ name SALES
+ 
+ int vlan 1100
+ description *** HR ***
+ ip address 10.2.10.209 255.255.255.248
+ no shutdown
+ int vlan 2100 
+ description *** IT ***
+ ip address 10.2.10.217 255.255.255.248
+ no shutdown
+ int vlan 3100
+ description *** SALES ***
+ ip address 10.2.10.225 255.255.255.224
+ no shutdown
+ 
+ int g1/0
+ switchport trunk encap dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 1100,2100
+ 
+ int g1/1
+ switchport trunk encap dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 1100,2100
+ 
+ Int g1/2
+ switchport mode access
+ switchport access vlan 3100
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ 
+ int g0/3
+ no switchport
+ ip address 10.2.10.201 255.255.255.252
+ desc *** /To /FL-RTR ***
+ 
+ ip route 10.2.10.192 255.255.255.255 10.2.10.201
+
+--------------------------------------------
+
+SWY
+!
+
+conf t
+	enable secret cisco
+	username cisco secret cisco
+	line con 0
+	logg sync
+	login loc
+	line vty 0 4
+	logg sync
+	login loc
+	end
+	
+vlan /2100
+ name IT
+ 
+ int g0/2
+ switchport mode access
+ switchport access vlan 2100
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ 
+ 
+ int vlan 2100
+ ip address 10.2.10.221 255.255.255.
+ shutdown
+ no shutdown
+ 
+ int g1/1
+ switchport trunk encap dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 1100,2100
+ exit
+ 
+ do wr me
+ -------------------------------------------
+ 
+ Router FL-RTR
+
+en
+line con 0
+ logging synchronous
+ login local
+line aux 0
+ logging synchronous
+line vty 0 4
+ logging synchronous
+ login local
+ 
+ conf t
+	enable secret cisco
+	username cisco secret cisco
+ 
+!
+conf t
+ip route 0.0.0.0 0.0.0.0 10.2.10.201
+FL-RTR has a default route back to FL-CORE-SW:
+
+int loop0
+ip address 10.2.10.192/32
+
+int g0/3 
+ip address 10.2.10.202 255.255.255.252
+no shutdown
+
+
+----------------------------------------
+Verification & Show Commands
+!
+
+sh ip int br
+sh vlan br
+sh int status(switches only)
+sh int g0/3 
+
+default int g0/3 (resets the interface port)
+int g0/0
+duplex full, duplex half, duplex auto
+speed 100,1000, auto
+*** always set speed if manually setting duplex make sure both sides of the interface match ***
+From FL-RTR 
+Ping all IP's 
+
+From FL-CORE-SW
+ping 10.2.10.192 source 10.2.10.209   ! from VLAN1100 SVI
+ping 10.2.10.192 source 10.2.10.217   ! from VLAN2100 SVI
+ping 10.2.10.192 source 10.2.10.225   ! from VLAN3100 SVI
+
+!! BONUS !!!
+✔ If a loopback won’t ping → it’s always routing
+✔ FL-RTR had the loopback → fine
+✔ FL-CORE-SW had zero idea how to get back → fixed with one line
+ conf t
+ip route 0.0.0.0 0.0.0.0 10.2.10.202
+
+default int g0/3 (resets the interface port)
+int g0/0
+duplex full, duplex half, duplex auto
+speed 100,1000, auto
+*** always set speed if manually setting duplex make sure both sides of the interface match ***
