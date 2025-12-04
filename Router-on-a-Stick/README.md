@@ -14,10 +14,8 @@ Implement **router-on-a-stick** using:
 This lab demonstrates **Inter-VLAN routing using a single physical router interface**.
 
 ---
-
-![Topology Diagram](Static%20default%20routes.drawio.png)
-
----
+## Topology
+![Topology Diagram](Router%20on%20a%20stick.drawio.png)
 
 ---
 
