@@ -170,7 +170,6 @@ ping 192.168.4.3
 - Switch must be **pure Layer 2** → `no ip routing`  
 
 ---
-
 # 🏁 Lab Status
 **Completed** — Inter-VLAN routing fully operational via router subinterfaces.
 
