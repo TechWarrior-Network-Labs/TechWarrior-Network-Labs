@@ -5,6 +5,15 @@
 
 ## 🔍 Objective
 Demonstrate VLAN segmentation and trunking across two switches, including management VLAN setup and SVI configuration.
+## 📝 To-Do Checklist (Lab Build Process)
+
+- [x] Set up basic switch/router configs  
+- [x] Configure access VLANs and trunk ports  
+- [x] Set up SVIs on two switches  
+- [x] Enable routing on L3 switch  
+- [x] Configure default routes  
+- [x] Test inter-VLAN and loopback reachability  
+- [x] Save all configurations (`wr mem`)
 
 ---
 
