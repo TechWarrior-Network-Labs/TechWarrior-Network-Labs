@@ -1,0 +1,146 @@
+===========================================
+ SW-1
+===========================================
+conf t
+ enable secret cisco
+ username cisco secret cisco
+
+ line con 0
+  logging synchronous
+  login local
+ exit
+ line vty 0 4
+  logging synchronous
+  login local
+ exit
+
+ hostname SW-1
+ no ip domain-lookup
+ no ip routing
+
+ vlan 3
+  name MGMT
+ vlan 4
+  name Operations
+ vlan 7
+  name ParkingLot
+ vlan 8
+  name Native
+
+ interface vlan 3
+  ip address 192.168.3.11 255.255.255.0
+  description MGMT
+  no shutdown
+ exit
+ ip default-gateway 192.168.3.1
+
+ interface g0/1
+  switchport mode access
+  switchport access vlan 3
+  spanning-tree portfast
+  spanning-tree bpduguard enable
+  no shutdown
+ exit
+
+ interface g0/2
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+  switchport trunk native vlan 8
+  switchport trunk allowed vlan 3,4,8
+  no shutdown
+ exit
+
+ interface g0/0
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+  switchport trunk native vlan 8
+  switchport trunk allowed vlan 3,4,8
+  no shutdown
+ exit
+
+
+===========================================
+ SW-2
+===========================================
+conf t
+ enable secret cisco
+ username cisco secret cisco
+
+ line con 0
+  logging synchronous
+  login local
+ exit
+ line vty 0 4
+  logging synchronous
+  login local
+ exit
+
+ hostname SW-2
+ no ip domain-lookup
+
+ vlan 3
+  name MGMT
+ vlan 4
+  name Operations
+ vlan 7
+  name ParkingLot
+ vlan 8
+  name Native
+
+ interface vlan 3
+  ip address 192.168.3.12 255.255.255.0
+  description MGMT
+  no shutdown
+ exit
+ ip default-gateway 192.168.3.1
+
+ interface g0/1
+  switchport mode access
+  switchport access vlan 4
+  spanning-tree portfast
+  spanning-tree bpduguard enable
+ exit
+
+ interface g0/0
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+  switchport trunk native vlan 8
+  switchport trunk allowed vlan 3,4,8
+  no shutdown
+ exit
+
+
+===========================================
+ RTR-1
+===========================================
+conf t
+ enable secret cisco
+ username cisco secret cisco
+
+ line con 0
+  logging synchronous
+  login local
+ exit
+ line vty 0 4
+  logging synchronous
+  login local
+ exit
+
+ hostname RTR-1
+ no ip domain-lookup
+
+ interface g0/0.3
+  encapsulation dot1q 3
+  description MGMT NETWRK
+  ip address 192.168.3.1 255.255.255.0
+
+ interface g0/0.4
+  encapsulation dot1q 4
+  description Operations Network
+  ip address 192.168.4.1 255.255.255.0
+
+ interface g0/0.8
+  encapsulation dot1q 8 native
+  description Native VLAN
+ exit
+

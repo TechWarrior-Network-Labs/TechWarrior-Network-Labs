@@ -1,0 +1,7 @@
+show vlan brief
+show ip interface brief
+show interfaces trunk
+show interface g0/0
+show arp
+ping 192.168.3.11
+ping 192.168.4.3
