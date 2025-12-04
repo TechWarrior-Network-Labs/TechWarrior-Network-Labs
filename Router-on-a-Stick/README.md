@@ -15,8 +15,10 @@ This lab demonstrates **Inter-VLAN routing using a single physical router interf
 
 ---
 
-## Topology 
-Static default routes.drawio.png
+![Topology Diagram](Static%20default%20routes.drawio.png)
+
+---
+
 ---
 
 ##  Build Checklist
